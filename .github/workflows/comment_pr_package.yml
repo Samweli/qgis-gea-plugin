@@ -15,7 +15,7 @@ jobs:
       - name: Wait for 10 seconds
         run: sleep 10
 
-      - name: List all available artifact names
+      - name: List all available artifact
         run: |
           echo "Listing all artifacts for the current workflow run..."
 
