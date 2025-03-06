@@ -19,7 +19,7 @@ jobs:
         run: |
           echo "Listing all artifacts for the past workflow run..."
 
-          # Get the current workflow run ID
+          # Get the past workflow run ID
           run_id=${{ github.event.workflow_run.id }}
           repo=${{ github.repository }}
 
@@ -39,9 +39,14 @@ jobs:
       - name: Download artifacts
         run: |
           mkdir artifacts
+          
+          # Get the past workflow run ID
+          run_id=${{ github.event.workflow_run.id }}
+          repo=${{ github.repository }}
+          
           curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                -H "Accept: application/vnd.github.v3+json" \
-               "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts" \
+               "https://api.github.com/repos/$repo/actions/runs/$run_id/artifacts" \
                | jq -r '.artifacts[] | select(.expired == false) | .archive_download_url' \
                | xargs -I {} curl -L -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -o artifacts/artifact.zip {}
 
