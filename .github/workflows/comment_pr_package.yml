@@ -66,7 +66,7 @@ jobs:
             unzip -o "$zip" -d "$ARTIFACT_FOLDER"
           done
 
-      - name: Verify Extracted Files
+      - name: List Extracted Files
         run: ls -lah artifacts/*
 
       - name: Read the pr number artifact
