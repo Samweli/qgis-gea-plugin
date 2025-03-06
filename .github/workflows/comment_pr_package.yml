@@ -17,13 +17,12 @@ jobs:
 
       - name: List all available artifact
         run: |
-          echo "Listing all artifacts for the past workflow run..."
+          echo "Listing all artifacts for the past workflow run"
 
           # Get the past workflow run ID
           run_id=${{ github.event.workflow_run.id }}
           repo=${{ github.repository }}
 
-          # Make a GitHub API call to list artifacts
           response=$(curl -s \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
@@ -55,27 +54,32 @@ jobs:
             ARTIFACT_NAME=$(basename "$url" | cut -d'.' -f1)
             curl -L -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -o "artifacts/${ARTIFACT_NAME}.zip" "$url"
           done
+          
+          echo "all artifacts: $ARTIFACT_URLS"
 
-      - name: Extract all artifacts
+      - name: Extract all artifacts (with unique folders)
         run: |
           for zip in artifacts/*.zip; do
-            unzip -o "$zip" -d artifacts
+            ARTIFACT_FOLDER="artifacts/$(basename "$zip" .zip)"
+            mkdir -p "$ARTIFACT_FOLDER"
+            echo "Extracting $zip into $ARTIFACT_FOLDER"
+            unzip -o "$zip" -d "$ARTIFACT_FOLDER"
           done
 
-      - name: List Extracted Files
-        run: ls -lah artifacts
+      - name: Verify Extracted Files
+        run: ls -lah artifacts/*
 
       - name: Read the pr number artifact
         id: pr_number_reader
         run: |
-          PR_NUMBER=$(cat artifacts/pr_number.txt)
+          PR_NUMBER=$(cat artifacts/pr_number/pr_number.txt)
           echo "PR number: $PR_NUMBER"
           echo "::set-output name=pr_number::$PR_NUMBER"
 
       - name: Read the artifact URL
         id: artifact_url_reader
         run: |
-          ARTIFACT_URL=$(cat artifacts/artifact_url.txt)
+          ARTIFACT_URL=$(cat artifacts/artifact_url/artifact_url.txt)
           echo "Artifact URL: $ARTIFACT_URL"
           echo "::set-output name=artifact_url::$ARTIFACT_URL"
 
