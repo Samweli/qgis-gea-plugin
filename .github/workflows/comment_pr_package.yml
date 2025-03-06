@@ -15,12 +15,12 @@ jobs:
       - name: Wait for 10 seconds
         run: sleep 10
 
-      - name: List all available artifact names
+      - name: List all available artifact
         run: |
           echo "Listing all artifacts for the current workflow run..."
 
           # Get the current workflow run ID
-          run_id=${{ github.run_id }}
+          run_id=${{ github.eveng.workflow_run.workflow_id }}
           repo=${{ github.repository }}
 
           # Make a GitHub API call to list artifacts
