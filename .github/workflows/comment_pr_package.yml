@@ -17,7 +17,7 @@ jobs:
 
       - name: List all available artifact
         run: |
-          echo "Listing all artifacts for the past workflow run..."
+          echo "Listing all artifacts for the past workflow run"
 
           # Get the past workflow run ID
           run_id=${{ github.event.workflow_run.id }}
