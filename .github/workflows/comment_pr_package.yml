@@ -51,14 +51,14 @@ jobs:
           
           # Download each artifact using artifact ID
           echo "$ARTIFACT_URLS" | while read -r url; do
-            ARTIFACT_ID=$(echo "$url" | cut -d'/' -f8)  # Extract artifact ID from URL
+            ARTIFACT_ID=$(echo "$url" | cut -d'/' -f9)  # Extract artifact ID from URL
             echo "Downloading artifact ID: $ARTIFACT_ID"
             curl -L -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -o "artifacts/${ARTIFACT_ID}.zip" "$url"
           done
 
           echo "all artifacts: $ARTIFACT_URLS"
 
-      - name: Extract all artifacts (with unique folders)
+      - name: Extract all artifacts
         run: |
           for zip in artifacts/*.zip; do
             unzip -o "$zip" -d artifacts
