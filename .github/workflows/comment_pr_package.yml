@@ -20,7 +20,7 @@ jobs:
           echo "Listing all artifacts for the past workflow run..."
 
           # Get the current workflow run ID
-          run_id=${{ github.eveng.workflow_run.id }}
+          run_id=${{ github.event.workflow_run.id }}
           repo=${{ github.repository }}
 
           # Make a GitHub API call to list artifacts
@@ -36,29 +36,32 @@ jobs:
           echo "Artifacts:"
           echo "$artifact_names"
 
-      - name: Download PR number artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: pr_number
-          path: ./pr_number
+      - name: Download artifacts
+        run: |
+          mkdir artifacts
+          curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+               -H "Accept: application/vnd.github.v3+json" \
+               "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts" \
+               | jq -r '.artifacts[] | select(.expired == false) | .archive_download_url' \
+               | xargs -I {} curl -L -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -o artifacts/artifact.zip {}
 
-      - name: Download artifact URL file
-        uses: actions/download-artifact@v4
-        with:
-          name: artifact_url
-          path: ./artifact_url
+      - name: Extract artifacts
+        run: unzip -o "artifacts/artifact.zip" -d "artifacts"
+
+      - name: List Extracted Files
+        run: ls -lah artifacts
 
       - name: Read the pr number artifact
         id: pr_number_reader
         run: |
-          PR_NUMBER=$(cat ./pr_number/pr_number.txt)
+          PR_NUMBER=$(cat artifacts/pr_number.txt)
           echo "PR number: $PR_NUMBER"
           echo "::set-output name=pr_number::$PR_NUMBER"
 
       - name: Read the artifact URL
         id: artifact_url_reader
         run: |
-          ARTIFACT_URL=$(cat ./artifact_url/artifact_url.txt)
+          ARTIFACT_URL=$(cat artifacts/artifact_url.txt)
           echo "Artifact URL: $ARTIFACT_URL"
           echo "::set-output name=artifact_url::$ARTIFACT_URL"
 
