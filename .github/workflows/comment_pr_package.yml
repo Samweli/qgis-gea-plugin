@@ -20,7 +20,7 @@ jobs:
           echo "Listing all artifacts for the past workflow run..."
 
           # Get the current workflow run ID
-          run_id=${{ github.eveng.workflow_run.id }}
+          run_id=${{ github.event.workflow_run.id }}
           repo=${{ github.repository }}
 
           # Make a GitHub API call to list artifacts
