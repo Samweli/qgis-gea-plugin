@@ -58,7 +58,7 @@ jobs:
 
           echo "all artifacts: $ARTIFACT_URLS"
 
-      - name: Extract all artifacts (with unique folders)
+      - name: Extract all artifacts
         run: |
           for zip in artifacts/*.zip; do
             unzip -o "$zip" -d artifacts
