@@ -38,20 +38,29 @@ jobs:
 
       - name: Download artifacts
         run: |
-          mkdir artifacts
+          mkdir -p artifacts
           
           # Get the past workflow run ID
           run_id=${{ github.event.workflow_run.id }}
           repo=${{ github.repository }}
           
-          curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-               -H "Accept: application/vnd.github.v3+json" \
+          # Fetch all artifact download URLs
+          ARTIFACT_URLS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
                "https://api.github.com/repos/$repo/actions/runs/$run_id/artifacts" \
-               | jq -r '.artifacts[] | select(.expired == false) | .archive_download_url' \
-               | xargs -I {} curl -L -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -o artifacts/artifact.zip {}
+            | jq -r '.artifacts[] | select(.expired == false) | .archive_download_url')
 
-      - name: Extract artifacts
-        run: unzip -o "artifacts/artifact.zip" -d "artifacts"
+          # Download each artifact
+          echo "$ARTIFACT_URLS" | while read -r url; do
+            ARTIFACT_NAME=$(basename "$url" | cut -d'.' -f1)
+            curl -L -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -o "artifacts/${ARTIFACT_NAME}.zip" "$url"
+          done
+
+      - name: Extract all artifacts
+        run: |
+          for zip in artifacts/*.zip; do
+            unzip -o "$zip" -d artifacts
+          done
 
       - name: List Extracted Files
         run: ls -lah artifacts
